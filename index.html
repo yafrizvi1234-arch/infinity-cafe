@@ -1,1 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#493326">
 
+  <title>Little Brew Café | Fresh Taste, Warm Moments</title>
+  <meta name="description" content="Discover delicious food, fresh coffee and a welcoming atmosphere at Little Brew Café.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ANNOUNCEMENT -->
+  <div class="announcement">
+    Freshly prepared food. Warmly served.
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container nav-container">
+
+      <a href="#home" class="brand">
+        <span class="brand-icon">☕</span>
+        <span id="brandName">Little Brew Café</span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+        ☰
+      </button>
+
+      <nav class="navigation" id="navigation">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#menu">Menu</a>
+        <a href="#contact">Contact</a>
+        <button class="nav-order" id="cartOpen">
+          Cart <span id="cartCount">0</span>
+        </button>
+        <button class="admin-nav" id="adminOpen">Admin</button>
+      </nav>
+
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HOME -->
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+
+        <div class="hero-content">
+          <span class="eyebrow">WELCOME TO OUR CAFÉ</span>
+
+          <h1 id="heroTitle">
+            Fresh Taste,<br>
+            <span>Warm Moments.</span>
+          </h1>
+
+          <p id="heroDescription">
+            Enjoy freshly prepared food, delicious coffee and
+            beautiful moments with the people you love.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#menu" class="btn btn-primary">Explore Menu</a>
+            <a href="#about" class="btn btn-outline">Discover Us</a>
+          </div>
+
+          <div class="hero-info">
+            <span>✦ Fresh Ingredients</span>
+            <span>✦ Made With Care</span>
+          </div>
+        </div>
+
+        <div class="hero-image">
+          <img
+            id="heroImage"
+            src="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1000"
+            alt="Cozy café interior"
+          >
+          <div class="image-label">
+            <span>☕</span>
+            <div>
+              <strong>Made Fresh Daily</strong>
+              <small>Quality in every cup</small>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features">
+      <div class="container feature-grid">
+
+        <div class="feature">
+          <span>☕</span>
+          <h3>Fresh Coffee</h3>
+          <p>Enjoy carefully prepared coffee.</p>
+        </div>
+
+        <div class="feature">
+          <span>🥗</span>
+          <h3>Fresh Food</h3>
+          <p>Prepared with quality ingredients.</p>
+        </div>
+
+        <div class="feature">
+          <span>🌿</span>
+          <h3>Cozy Atmosphere</h3>
+          <p>A welcoming place for everyone.</p>
+        </div>
+
+        <div class="feature">
+          <span>❤️</span>
+          <h3>Made With Love</h3>
+          <p>Every detail matters to us.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section about-section" id="about">
+      <div class="container about-grid">
+
+        <div class="about-image">
+          <img
+            src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1000"
+            alt="Café interior"
+          >
+        </div>
+
+        <div class="about-content">
+          <span class="eyebrow">OUR STORY</span>
+          <h2>A Place to Enjoy <span>Every Moment</span></h2>
+
+          <p id="aboutDescription">
+            Welcome to Little Brew Café. We believe great food,
+            fresh coffee and a friendly atmosphere can make
+            ordinary moments special.
+          </p>
+
+          <p>
+            Whether you are meeting friends, enjoying a quiet
+            coffee or sharing a meal with family, we are happy
+            to welcome you.
+          </p>
+
+          <a href="#contact" class="btn btn-primary">Visit Our Café</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MENU -->
+    <section class="section menu-section" id="menu">
+      <div class="container">
+
+        <div class="section-heading">
+          <span class="eyebrow">OUR MENU</span>
+          <h2>Explore Our <span>Delicious Menu</span></h2>
+          <p>Discover something delicious for every moment.</p>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="menu-search">
+          <input
+            type="search"
+            id="foodSearch"
+            placeholder="Search food or drinks..."
+          >
+          <span>⌕</span>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="category-list" id="categoryList">
+          <button class="category-btn active" data-category="all">
+            All Items
+          </button>
+        </div>
+
+        <!-- FOOD ITEMS -->
+        <div class="food-grid" id="foodGrid">
+
+          <div class="loading-message">
+            Loading delicious menu...
+          </div>
+
+        </div>
+
+        <div class="empty-message hidden" id="emptyMenu">
+          No food items found.
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SPECIAL SECTION -->
+    <section class="special-section">
+      <div class="container special-content">
+        <span class="eyebrow">A LITTLE SOMETHING SPECIAL</span>
+        <h2>Good Food. Good Coffee. Good Memories.</h2>
+        <p>Come in, relax and enjoy something delicious.</p>
+        <a href="#menu" class="btn btn-light">View Our Menu</a>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="section reviews-section">
+      <div class="container">
+
+        <div class="section-heading">
+          <span class="eyebrow">CUSTOMER EXPERIENCE</span>
+          <h2>Moments Worth <span>Sharing</span></h2>
+          <p>We value every guest and every experience.</p>
+        </div>
+
+        <div class="review-grid">
+
+          <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>Beautiful atmosphere and a lovely place to relax.</p>
+            <strong>Happy Guest</strong>
+          </div>
+
+          <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>Fresh food and a welcoming café experience.</p>
+            <strong>Happy Guest</strong>
+          </div>
+
+          <div class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>A comfortable place to enjoy coffee with friends.</p>
+            <strong>Happy Guest</strong>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="section contact-section" id="contact">
+      <div class="container">
+
+        <div class="section-heading">
+          <span class="eyebrow">GET IN TOUCH</span>
+          <h2>We'd Love to <span>Hear From You</span></h2>
+          <p>Have a question? Send us a message.</p>
+        </div>
+
+        <div class="contact-grid">
+
+          <div class="contact-info">
+
+            <div class="contact-item">
+              <span>📍</span>
+              <div>
+                <h3>Our Location</h3>
+                <p id="cafeAddress">Address will be updated.</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <span>📞</span>
+              <div>
+                <h3>Phone</h3>
+                <p id="cafePhone">Phone will be updated.</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <span>✉️</span>
+              <div>
+                <h3>Email</h3>
+                <p id="cafeEmail">Email will be updated.</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <span>🕒</span>
+              <div>
+                <h3>Opening Hours</h3>
+                <p id="cafeHours">Opening hours will be updated.</p>
+              </div>
+            </div>
+
+            <div class="social-links" id="socialLinks">
+              <a href="#" aria-label="Facebook">Facebook</a>
+              <a href="#" aria-label="Instagram">Instagram</a>
+            </div>
+
+          </div>
+
+          <form class="contact-form" id="contactForm">
+
+            <h3>Send Us a Message</h3>
+
+            <label for="contactName">Your Name</label>
+            <input id="contactName" type="text" required placeholder="Enter your name">
+
+            <label for="contactEmail">Your Email</label>
+            <input id="contactEmail" type="email" required placeholder="Enter your email">
+
+            <label for="contactSubject">Subject</label>
+            <input id="contactSubject" type="text" required placeholder="Message subject">
+
+            <label for="contactMessage">Message</label>
+            <textarea id="contactMessage" required rows="5" placeholder="Write your message..."></textarea>
+
+            <button class="btn btn-primary" type="submit">
+              Send Message
+            </button>
+
+            <p id="contactStatus" class="form-status"></p>
+
+          </form>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-grid">
+
+      <div>
+        <a href="#home" class="brand footer-brand">
+          ☕ <span id="footerBrand">Little Brew Café</span>
+        </a>
+        <p>Fresh taste, warm moments and memories worth sharing.</p>
+      </div>
+
+      <div>
+        <h3>Quick Links</h3>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#menu">Menu</a>
+        <a href="#contact">Contact</a>
+      </div>
+
+      <div>
+        <h3>Visit Us</h3>
+        <p id="footerAddress">Our café address</p>
+        <p id="footerHours">Opening hours</p>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>© <span id="currentYear"></span> <span id="copyrightBrand">Little Brew Café</span>. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- CART DRAWER -->
+  <div class="overlay hidden" id="cartOverlay"></div>
+
+  <aside class="cart-drawer" id="cartDrawer">
+
+    <div class="drawer-header">
+      <h2>Your Cart</h2>
+      <button id="cartClose" class="close-btn">✕</button>
+    </div>
+
+    <div id="cartItems" class="cart-items">
+      <p>Your cart is empty.</p>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total">
+        <strong>Total</strong>
+        <strong id="cartTotal">0.00</strong>
+      </div>
+
+      <button class="btn btn-primary full-width" id="checkoutBtn">
+        Continue to Order
+      </button>
+
+      <p class="small-note">
+        Ordering availability depends on the café's configuration.
+      </p>
+    </div>
+
+  </aside>
+
+  <!-- ADMIN LOGIN -->
+  <div class="modal hidden" id="loginModal">
+    <div class="modal-card">
+
+      <button class="close-btn modal-close" id="loginClose">✕</button>
+
+      <div class="modal-icon">🔐</div>
+      <h2>Admin Login</h2>
+      <p>Sign in to manage your café website.</p>
+
+      <form id="loginForm">
+
+        <label for="adminEmail">Email Address</label>
+        <input id="adminEmail" type="email" required placeholder="Admin email">
+
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" type="password" required placeholder="Password">
+
+        <button type="submit" class="btn btn-primary full-width">
+          Login to Dashboard
+        </button>
+
+        <p id="loginStatus" class="form-status"></p>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <section class="admin-panel hidden" id="adminPanel">
+
+    <div class="admin-topbar">
+      <div>
+        <span class="eyebrow">MANAGEMENT SYSTEM</span>
+        <h1>Admin Dashboard</h1>
+      </div>
+
+      <div class="admin-top-actions">
+        <button class="btn btn-outline" id="backToWebsite">
+          View Website
+        </button>
+        <button class="btn btn-danger" id="adminLogout">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD STATS -->
+    <div class="admin-stats">
+
+      <div class="stat-card">
+        <span>Total Food Items</span>
+        <strong id="statTotal">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Available Items</span>
+        <strong id="statAvailable">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Unavailable Items</span>
+        <strong id="statUnavailable">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Categories</span>
+        <strong id="statCategories">0</strong>
+      </div>
+
+    </div>
+
+    <!-- ADMIN NAVIGATION -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="productsTab">Food Management</button>
+      <button class="admin-tab" data-tab="categoriesTab">Categories</button>
+      <button class="admin-tab" data-tab="settingsTab">Website Settings</button>
+      <button class="admin-tab" data-tab="ordersTab">Orders</button>
+    </div>
+
+    <!-- FOOD MANAGEMENT -->
+    <div class="admin-content" id="productsTab">
+
+      <div class="admin-section-heading">
+        <div>
+          <h2>Food Management</h2>
+          <p>Add, edit, remove and manage menu items.</p>
+        </div>
+        <button class="btn btn-primary" id="addFoodBtn">+ Add New Food</button>
+      </div>
+
+      <form class="admin-form hidden" id="foodForm">
+
+        <h3 id="foodFormTitle">Add New Food</h3>
+
+        <input type="hidden" id="foodId">
+
+        <div class="form-grid">
+
+          <div>
+            <label for="foodName">Food Name</label>
+            <input id="foodName" required placeholder="e.g. Cappuccino">
+          </div>
+
+          <div>
+            <label for="foodPrice">Price</label>
+            <input id="foodPrice" type="number" min="0" step="0.01" required>
+          </div>
+
+          <div>
+            <label for="foodCategory">Category</label>
+            <select id="foodCategory" required></select>
+          </div>
+
+          <div>
+            <label for="foodAvailability">Availability</label>
+            <select id="foodAvailability">
+              <option value="true">Available</option>
+              <option value="false">Unavailable</option>
+            </select>
+          </div>
+
+          <div class="full-span">
+            <label for="foodDescription">Description</label>
+            <textarea id="foodDescription" rows="3"></textarea>
+          </div>
+
+          <div class="full-span">
+            <label for="foodImage">Food Image</label>
+            <input id="foodImage" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>JPG, PNG or WebP. Maximum 5 MB.</small>
+            <img id="foodImagePreview" class="image-preview hidden" alt="Food preview">
+          </div>
+
+          <div class="checkbox-field">
+            <input type="checkbox" id="foodFeatured">
+            <label for="foodFeatured">Show as Featured Item</label>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="saveFoodBtn">Save Food</button>
+          <button type="button" class="btn btn-outline" id="cancelFoodBtn">Cancel</button>
+        </div>
+
+        <p id="foodStatus" class="form-status"></p>
+
+      </form>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminFoodList">
+            <tr>
+              <td colspan="6">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- CATEGORY MANAGEMENT -->
+    <div class="admin-content hidden" id="categoriesTab">
+
+      <div class="admin-section-heading">
+        <div>
+          <h2>Category Management</h2>
+          <p>Create and manage food categories.</p>
+        </div>
+      </div>
+
+      <form id="categoryForm" class="inline-form">
+        <input id="newCategoryName" required placeholder="New category name">
+        <button type="submit" class="btn btn-primary">Add Category</button>
+      </form>
+
+      <div id="adminCategoryList" class="admin-category-list"></div>
+
+    </div>
+
+    <!-- WEBSITE SETTINGS -->
+    <div class="admin-content hidden" id="settingsTab">
+
+      <h2>Website Settings</h2>
+      <p>Manage your café's public information.</p>
+
+      <form id="settingsForm" class="admin-form">
+
+        <div class="form-grid">
+
+          <div>
+            <label for="settingName">Café Name</label>
+            <input id="settingName">
+          </div>
+
+          <div>
+            <label for="settingPhone">Phone Number</label>
+            <input id="settingPhone">
+          </div>
+
+          <div>
+            <label for="settingEmail">Email</label>
+            <input id="settingEmail" type="email">
+          </div>
+
+          <div>
+            <label for="settingWhatsapp">WhatsApp Number</label>
+            <input id="settingWhatsapp">
+          </div>
+
+          <div class="full-span">
+            <label for="settingAddress">Address</label>
+            <textarea id="settingAddress" rows="2"></textarea>
+          </div>
+
+          <div class="full-span">
+            <label for="settingAbout">About Description</label>
+            <textarea id="settingAbout" rows="3"></textarea>
+          </div>
+
+          <div>
+            <label for="settingHours">Opening Hours</label>
+            <input id="settingHours">
+          </div>
+
+          <div>
+            <label for="settingFacebook">Facebook URL</label>
+            <input id="settingFacebook" type="url">
+          </div>
+
+          <div>
+            <label for="settingInstagram">Instagram URL</label>
+            <input id="settingInstagram" type="url">
+          </div>
+
+          <div class="full-span">
+            <label for="settingHeroImage">Hero Image URL</label>
+            <input id="settingHeroImage" type="url">
+          </div>
+
+        </div>
+
+        <button class="btn btn-primary" type="submit">Save Website Settings</button>
+        <p id="settingsStatus" class="form-status"></p>
+
+      </form>
+
+    </div>
+
+    <!-- ORDER MANAGEMENT -->
+    <div class="admin-content hidden" id="ordersTab">
+
+      <h2>Order Management</h2>
+      <p>Review customer orders and update their status.</p>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Update</th>
+            </tr>
+          </thead>
+          <tbody id="adminOrderList">
+            <tr>
+              <td colspan="6">No orders loaded.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div id="adminNotice" class="form-status"></div>
+
+  </section>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="modal hidden" id="checkoutModal">
+
+    <div class="modal-card checkout-card">
+
+      <button class="close-btn modal-close" id="checkoutClose">✕</button>
+
+      <h2>Complete Your Order</h2>
+      <p>Enter your contact information.</p>
+
+      <form id="checkoutForm">
+
+        <label for="orderCustomer">Your Name</label>
+        <input id="orderCustomer" required>
+
+        <label for="orderPhone">Phone Number</label>
+        <input id="orderPhone" required type="tel">
+
+        <label for="orderAddress">Delivery Address</label>
+        <textarea id="orderAddress" required rows="3"></textarea>
+
+        <button type="submit" class="btn btn-primary full-width">
+          Place Order
+        </button>
+
+        <p id="checkoutStatus" class="form-status"></p>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
