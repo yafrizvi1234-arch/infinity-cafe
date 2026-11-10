@@ -7,7 +7,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Supabase Dashboard থেকে এগুলো সংগ্রহ করবে।
 const SUPABASE_URL = "https://rszwbyvvnpoiczyolhwd.supabase.co";
-const SUPABASE_ANON_KEY = "sb\_publishable\_hmkeEL-eznDDhqv2iTvYXA\_asXn1O\_C";
+const SUPABASE_ANON_KEY = "sb_publishable_hmkeEL-eznDDhqv2iTvYXA_asXn1O_C";
 
 const supabaseConfigured =
   SUPABASE_URL.startsWith("https://") &&
