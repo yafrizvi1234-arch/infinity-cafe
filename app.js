@@ -5,23 +5,19 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
    1. SUPABASE CONFIGURATION
 ========================================= */
 
-// Supabase Dashboard থেকে এগুলো সংগ্রহ করবে।
 const SUPABASE_URL = "https://rszwbyvvnpoiczyolhwd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_hmkeEL-eznDDhqv2iTvYXA_asXn1O_C";
 
 const supabaseConfigured =
   SUPABASE_URL.startsWith("https://") &&
-  !SUPABASE_URL.includes("YOUR_SUPABASE");
+  !SUPABASE_URL.includes("YOUR_SUPABASE") &&
+  Boolean(SUPABASE_ANON_KEY);
 
 const supabase = supabaseConfigured
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
 const STORAGE_BUCKET = "food-images";
-
-/* =========================================
-   2. APPLICATION STATE
-========================================= */
 
 let foods = [];
 let categories = [];
@@ -45,6 +41,7 @@ const money = (amount) =>
 
 function notify(message) {
   const toast = $("toast");
+
   if (!toast) {
     alert(message);
     return;
@@ -54,6 +51,7 @@ function notify(message) {
   toast.classList.add("show");
 
   clearTimeout(notify.timer);
+
   notify.timer = setTimeout(() => {
     toast.classList.remove("show");
   }, 2800);
@@ -61,35 +59,58 @@ function notify(message) {
 
 function requireSupabase() {
   if (!supabase) {
-    notify("প্রথমে app.js-এ Supabase URL ও Key বসাও।");
+    notify("Supabase Configuration পরীক্ষা করো।");
     return false;
   }
+
   return true;
 }
 
+function setValue(id, value) {
+  const element = $(id);
+  if (element && value !== null && value !== undefined) {
+    element.value = value;
+  }
+}
+
+function setText(id, value) {
+  const element = $(id);
+  if (element && value !== null && value !== undefined) {
+    element.textContent = value;
+  }
+}
+
 /* =========================================
-   3. INITIALIZATION
+   2. INITIALIZATION
 ========================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // HTML-এর admin-content-কে CSS-এর admin-panel
+  // ক্লাসের সঙ্গে সামঞ্জস্য করা।
+  document.querySelectorAll(".admin-content").forEach((panel) => {
+    panel.classList.add("admin-panel");
+  });
+
   setupNavigation();
   setupCart();
   setupAdmin();
   setupForms();
   setupCheckout();
   setupContactForm();
+  setupPublicEvents();
 
-  if (requireSupabase()) {
-    await loadWebsite();
-    await checkAdminSession();
-  } else {
+  if (!requireSupabase()) {
     renderFoods();
     renderCategories();
+    return;
   }
+
+  await loadWebsite();
+  await checkAdminSession();
 });
 
 /* =========================================
-   4. LOAD WEBSITE DATA
+   3. WEBSITE DATA
 ========================================= */
 
 async function loadWebsite() {
@@ -115,8 +136,10 @@ async function loadFoods() {
   }
 
   foods = data || [];
+
   renderFoods();
   renderAdminFoods();
+  updateAdminStats();
 }
 
 async function loadCategories() {
@@ -129,13 +152,16 @@ async function loadCategories() {
 
   if (error) {
     console.error("Categories:", error);
+    notify("Category লোড করা যায়নি।");
     return;
   }
 
   categories = data || [];
+
   renderCategories();
   renderCategorySelect();
   renderAdminCategories();
+  updateAdminStats();
 }
 
 async function loadSettings() {
@@ -156,50 +182,62 @@ async function loadSettings() {
 
   const name = data.cafe_name || "Little Brew Café";
 
+  // Brand information
+  setText("brandName", name);
+  setText("footerBrand", name);
+  setText("copyrightBrand", name);
+  setText("siteTitle", name);
+
   document.querySelectorAll(".logo").forEach((element) => {
     element.textContent = name;
   });
 
-  const title = $("siteTitle");
-  if (title) title.textContent = name;
+  // Contact information
+  setText("contactAddress", data.address);
+  setText("contactPhone", data.phone);
+  setText("contactEmail", data.email);
 
-  const address = $("contactAddress");
-  if (address && data.address) address.textContent = data.address;
+  // Additional settings fields
+  setValue("settingName", data.cafe_name);
+  setValue("settingPhone", data.phone);
+  setValue("settingEmail", data.email);
+  setValue("settingAddress", data.address);
+  setValue("settingAbout", data.description);
+  setValue("settingHours", data.opening_hours);
 
-  const phone = $("contactPhone");
-  if (phone && data.phone) phone.textContent = data.phone;
+  // Admin settings form
+  setValue("settingWhatsapp", data.whatsapp);
+  setValue("settingFacebook", data.facebook);
+  setValue("settingInstagram", data.instagram);
+  setValue("settingHeroImage", data.hero_image);
 
-  const email = $("contactEmail");
-  if (email && data.email) email.textContent = data.email;
+  // Website content
+  const aboutText = $("aboutDescription");
+  if (aboutText && data.description) {
+    aboutText.textContent = data.description;
+  }
 
-  const form = $("settingsForm");
-  if (form) {
-    setFormValue(form, "cafe_name", data.cafe_name);
-    setFormValue(form, "address", data.address);
-    setFormValue(form, "phone", data.phone);
-    setFormValue(form, "email", data.email);
-    setFormValue(form, "opening_hours", data.opening_hours);
-    setFormValue(form, "description", data.description);
+  const heroImage = $("heroImage");
+  if (heroImage && data.hero_image) {
+    heroImage.src = data.hero_image;
   }
 }
 
-function setFormValue(form, name, value) {
-  const field = form.elements.namedItem(name);
-  if (field && value != null) field.value = value;
-}
-
 /* =========================================
-   5. PUBLIC FOOD MENU
+   4. PUBLIC MENU
 ========================================= */
 
 function renderFoods() {
   const grid = $("foodGrid");
   if (!grid) return;
 
-  const search = ($("foodSearch")?.value || "").toLowerCase();
+  const search = ($("foodSearch")?.value || "")
+    .trim()
+    .toLowerCase();
 
   const filtered = foods.filter((food) => {
     const available = food.availability !== false;
+
     const matchesCategory =
       currentCategory === "All" ||
       food.category === currentCategory;
@@ -216,7 +254,8 @@ function renderFoods() {
       <div class="empty-menu">
         <h3>কোনো খাবার পাওয়া যায়নি</h3>
         <p>অন্য নাম দিয়ে সার্চ করে দেখো।</p>
-      </div>`;
+      </div>
+    `;
     return;
   }
 
@@ -229,7 +268,10 @@ function renderFoods() {
           alt="${escapeHTML(food.name)}"
           loading="lazy"
         >
-        ${food.featured ? '<span class="food-badge">SPECIAL</span>' : ""}
+
+        ${food.featured
+          ? '<span class="food-badge">SPECIAL</span>'
+          : ""}
       </div>
 
       <div class="food-content">
@@ -238,6 +280,7 @@ function renderFoods() {
 
         <div class="food-bottom">
           <span class="food-price">${money(food.price)}</span>
+
           <button
             class="add-cart-btn"
             type="button"
@@ -255,12 +298,17 @@ function renderCategories() {
   const list = $("categoryList");
   if (!list) return;
 
-  const names = ["All", ...categories.map((item) => item.name)];
+  const names = [
+    "All",
+    ...categories.map((item) => item.name)
+  ];
 
   list.innerHTML = names.map((name) => `
     <button
       type="button"
-      class="category-btn ${currentCategory === name ? "active" : ""}"
+      class="category-btn ${
+        currentCategory === name ? "active" : ""
+      }"
       data-category="${escapeHTML(name)}"
     >
       ${escapeHTML(name)}
@@ -276,6 +324,7 @@ function renderCategorySelect() {
 
   select.innerHTML = `
     <option value="">Select Category</option>
+
     ${categories.map((category) => `
       <option value="${escapeHTML(category.name)}">
         ${escapeHTML(category.name)}
@@ -286,30 +335,35 @@ function renderCategorySelect() {
   select.value = selected;
 }
 
-$("foodSearch")?.addEventListener("input", renderFoods);
+function setupPublicEvents() {
+  $("foodSearch")?.addEventListener("input", renderFoods);
 
-$("foodGrid")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-add-cart]");
-  if (!button) return;
+  $("foodGrid")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-add-cart]");
+    if (!button) return;
 
-  addToCart(button.dataset.addCart);
-});
+    addToCart(button.dataset.addCart);
+  });
 
-$("categoryList")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
+  $("categoryList")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-category]");
+    if (!button) return;
 
-  currentCategory = button.dataset.category;
-  renderCategories();
-  renderFoods();
-});
+    currentCategory = button.dataset.category;
+
+    renderCategories();
+    renderFoods();
+  });
+}
 
 /* =========================================
-   6. SHOPPING CART
+   5. SHOPPING CART
 ========================================= */
 
 function addToCart(foodId) {
-  const food = foods.find((item) => String(item.id) === String(foodId));
+  const food = foods.find(
+    (item) => String(item.id) === String(foodId)
+  );
 
   if (!food || food.availability === false) {
     notify("এই খাবারটি এখন পাওয়া যাচ্ছে না।");
@@ -372,18 +426,40 @@ function renderCart() {
           </div>
 
           <div class="cart-quantity">
-            <button type="button" data-quantity="${escapeHTML(item.id)}" data-change="-1">−</button>
+            <button
+              type="button"
+              data-quantity="${escapeHTML(item.id)}"
+              data-change="-1"
+            >−</button>
+
             <span>${item.quantity}</span>
-            <button type="button" data-quantity="${escapeHTML(item.id)}" data-change="1">+</button>
+
+            <button
+              type="button"
+              data-quantity="${escapeHTML(item.id)}"
+              data-change="1"
+            >+</button>
           </div>
         </div>
       `).join("")
       : '<p class="cart-empty">তোমার Cart এখন খালি।</p>';
   }
 
-  if (totalElement) totalElement.textContent = money(total);
+  if (totalElement) {
+    totalElement.textContent = money(total);
+  }
 
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const count = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  const countElement = $("cartCount");
+
+  if (countElement) {
+    countElement.textContent = count;
+  }
+
   document.querySelectorAll(".cart-count").forEach((element) => {
     element.textContent = count;
   });
@@ -400,6 +476,9 @@ function setupCart() {
     );
   });
 
+  // HTML ID এবং পুরোনো data attribute—দুটিই সমর্থন করবে।
+  $("cartOpen")?.addEventListener("click", openCart);
+
   document.querySelectorAll("[data-open-cart]").forEach((button) => {
     button.addEventListener("click", openCart);
   });
@@ -407,7 +486,9 @@ function setupCart() {
   $("cartClose")?.addEventListener("click", closeCart);
 
   $("cartOverlay")?.addEventListener("click", (event) => {
-    if (event.target.id === "cartOverlay") closeCart();
+    if (event.target.id === "cartOverlay") {
+      closeCart();
+    }
   });
 
   renderCart();
@@ -422,26 +503,30 @@ function closeCart() {
 }
 
 /* =========================================
-   7. NAVIGATION
+   6. NAVIGATION
 ========================================= */
 
 function setupNavigation() {
+  const navigation = $("navigation") || $("navLinks");
+
   $("menuToggle")?.addEventListener("click", () => {
-    $("navLinks")?.classList.toggle("open");
+    navigation?.classList.toggle("open");
   });
 
-  $("navLinks")?.querySelectorAll("a").forEach((link) => {
+  navigation?.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => {
-      $("navLinks")?.classList.remove("open");
+      navigation.classList.remove("open");
     });
   });
 }
 
 /* =========================================
-   8. ADMIN LOGIN & AUTHENTICATION
+   7. ADMIN AUTHENTICATION
 ========================================= */
 
 function setupAdmin() {
+  $("adminOpen")?.addEventListener("click", openAdminLogin);
+
   document.querySelectorAll("[data-open-admin]").forEach((button) => {
     button.addEventListener("click", openAdminLogin);
   });
@@ -455,7 +540,6 @@ function setupAdmin() {
   document.querySelectorAll(".admin-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       const target = tab.dataset.target || tab.dataset.tab;
-
       if (!target) return;
 
       document.querySelectorAll(".admin-tab").forEach((item) => {
@@ -504,6 +588,14 @@ async function loginAdmin(event) {
     return;
   }
 
+  const isAdmin = await verifyAdmin();
+
+  if (!isAdmin) {
+    await supabase.auth.signOut();
+    notify("এই Account Admin হিসেবে অনুমোদিত নয়।");
+    return;
+  }
+
   closeAdminLogin();
   $("adminPanel")?.classList.add("show");
 
@@ -511,13 +603,40 @@ async function loginAdmin(event) {
   notify("Admin Login সফল হয়েছে।");
 }
 
+async function verifyAdmin() {
+  const { data: sessionData } = await supabase.auth.getSession();
+
+  const userId = sessionData.session?.user?.id;
+  if (!userId) return false;
+
+  const { data, error } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Admin verification:", error);
+    return false;
+  }
+
+  return Boolean(data);
+}
+
 async function checkAdminSession() {
   const { data } = await supabase.auth.getSession();
 
-  if (data.session) {
-    $("adminPanel")?.classList.add("show");
-    await loadAdminData();
+  if (!data.session) return;
+
+  const isAdmin = await verifyAdmin();
+
+  if (!isAdmin) {
+    await supabase.auth.signOut();
+    return;
   }
+
+  $("adminPanel")?.classList.add("show");
+  await loadAdminData();
 }
 
 async function logoutAdmin() {
@@ -535,7 +654,7 @@ async function logoutAdmin() {
 }
 
 /* =========================================
-   9. ADMIN DATA
+   8. ADMIN DASHBOARD
 ========================================= */
 
 async function loadAdminData() {
@@ -549,24 +668,27 @@ async function loadAdminData() {
 }
 
 function updateAdminStats() {
-  const totalFoods = $("totalFoods");
-  const availableFoods = $("availableFoods");
-  const totalCategories = $("totalCategories");
+  const total = foods.length;
 
-  if (totalFoods) totalFoods.textContent = foods.length;
+  const available = foods.filter(
+    (food) => food.availability !== false
+  ).length;
 
-  if (availableFoods) {
-    availableFoods.textContent =
-      foods.filter((food) => food.availability !== false).length;
-  }
+  const unavailable = total - available;
 
-  if (totalCategories) {
-    totalCategories.textContent = categories.length;
-  }
+  setText("statTotal", total);
+  setText("statAvailable", available);
+  setText("statUnavailable", unavailable);
+  setText("statCategories", categories.length);
+
+  // পুরোনো HTML ID-ও সমর্থন করবে।
+  setText("totalFoods", total);
+  setText("availableFoods", available);
+  setText("totalCategories", categories.length);
 }
 
 /* =========================================
-   10. ADD / EDIT FOOD
+   9. ADMIN FORMS
 ========================================= */
 
 function setupForms() {
@@ -580,6 +702,10 @@ function setupForms() {
 
   $("adminCategoryList")?.addEventListener("click", handleCategoryActions);
 }
+
+/* =========================================
+   10. FOOD IMAGE UPLOAD
+========================================= */
 
 async function uploadFoodImage(file) {
   if (!file) return null;
@@ -611,18 +737,27 @@ async function uploadFoodImage(file) {
   return data.publicUrl;
 }
 
+/* =========================================
+   11. SAVE FOOD
+========================================= */
+
 async function saveFood(event) {
   event.preventDefault();
 
   if (!requireSupabase()) return;
 
   const form = event.currentTarget;
+
   const name = $("foodName")?.value.trim();
   const price = Number($("foodPrice")?.value);
   const category = $("foodCategory")?.value;
   const description = $("foodDescription")?.value.trim();
-  const availability = $("foodAvailability")?.checked ?? true;
-  const featured = $("foodFeatured")?.checked ?? false;
+
+  // HTML-এ availability একটি SELECT।
+  const availability =
+    $("foodAvailability")?.value === "true";
+
+  const featured = Boolean($("foodFeatured")?.checked);
   const imageFile = $("foodImage")?.files?.[0];
 
   if (!name || !category || !Number.isFinite(price) || price < 0) {
@@ -646,7 +781,9 @@ async function saveFood(event) {
       featured
     };
 
-    if (imageUrl) payload.image_url = imageUrl;
+    if (imageUrl) {
+      payload.image_url = imageUrl;
+    }
 
     let result;
 
@@ -657,7 +794,8 @@ async function saveFood(event) {
         .eq("id", editingFoodId);
     } else {
       if (!imageUrl) {
-        payload.image_url = "https://placehold.co/600x400?text=Food";
+        payload.image_url =
+          "https://placehold.co/600x400?text=Food";
       }
 
       result = await supabase
@@ -671,10 +809,12 @@ async function saveFood(event) {
     editingFoodId = null;
 
     const submitButton = form.querySelector('[type="submit"]');
-    if (submitButton) submitButton.textContent = "Save Food";
+
+    if (submitButton) {
+      submitButton.textContent = "Save Food";
+    }
 
     await loadFoods();
-    updateAdminStats();
 
     notify("খাবারের তথ্য সংরক্ষণ হয়েছে।");
 
@@ -684,6 +824,10 @@ async function saveFood(event) {
   }
 }
 
+/* =========================================
+   12. ADMIN FOOD TABLE
+========================================= */
+
 function renderAdminFoods() {
   const table = $("adminFoodList");
   if (!table) return;
@@ -692,21 +836,36 @@ function renderAdminFoods() {
     ? foods.map((food) => `
       <tr>
         <td>
-          <img src="${escapeHTML(food.image_url || "")}" alt="">
+          <img
+            src="${escapeHTML(food.image_url || "")}"
+            alt="${escapeHTML(food.name)}"
+          >
         </td>
+
         <td>${escapeHTML(food.name)}</td>
-        <td>${money(food.price)}</td>
         <td>${escapeHTML(food.category)}</td>
+        <td>${money(food.price)}</td>
+
         <td>
           <span class="status-badge ${
-            food.availability ? "status-available" : "status-unavailable"
+            food.availability
+              ? "status-available"
+              : "status-unavailable"
           }">
             ${food.availability ? "Available" : "Unavailable"}
           </span>
         </td>
+
         <td>
-          <button class="admin-action edit-btn" data-edit-food="${escapeHTML(food.id)}">Edit</button>
-          <button class="admin-action delete-btn" data-delete-food="${escapeHTML(food.id)}">Delete</button>
+          <button
+            class="admin-action edit-btn"
+            data-edit-food="${escapeHTML(food.id)}"
+          >Edit</button>
+
+          <button
+            class="admin-action delete-btn"
+            data-delete-food="${escapeHTML(food.id)}"
+          >Delete</button>
         </td>
       </tr>
     `).join("")
@@ -718,6 +877,7 @@ function handleFoodActions(event) {
   const deleteButton = event.target.closest("[data-delete-food]");
 
   if (editButton) editFood(editButton.dataset.editFood);
+
   if (deleteButton) deleteFood(deleteButton.dataset.deleteFood);
 }
 
@@ -730,21 +890,26 @@ function editFood(foodId) {
 
   editingFoodId = food.id;
 
-  $("foodName").value = food.name || "";
-  $("foodPrice").value = food.price || "";
-  $("foodCategory").value = food.category || "";
-  $("foodDescription").value = food.description || "";
+  setValue("foodName", food.name);
+  setValue("foodPrice", food.price);
+  setValue("foodCategory", food.category);
+  setValue("foodDescription", food.description);
 
-  if ($("foodAvailability")) {
-    $("foodAvailability").checked = food.availability !== false;
-  }
+  // SELECT-এর value সেট করতে হবে, checked নয়।
+  setValue(
+    "foodAvailability",
+    food.availability === false ? "false" : "true"
+  );
 
   if ($("foodFeatured")) {
     $("foodFeatured").checked = Boolean(food.featured);
   }
 
   const button = $("foodForm")?.querySelector('[type="submit"]');
-  if (button) button.textContent = "Update Food";
+
+  if (button) {
+    button.textContent = "Update Food";
+  }
 
   $("foodForm")?.scrollIntoView({ behavior: "smooth" });
 }
@@ -765,12 +930,11 @@ async function deleteFood(foodId) {
   }
 
   await loadFoods();
-  updateAdminStats();
   notify("খাবার Delete হয়েছে।");
 }
 
 /* =========================================
-   11. CATEGORY MANAGEMENT
+   13. CATEGORY MANAGEMENT
 ========================================= */
 
 async function saveCategory(event) {
@@ -779,9 +943,10 @@ async function saveCategory(event) {
   if (!requireSupabase()) return;
 
   const form = event.currentTarget;
+
   const input =
-    form.querySelector('[name="category_name"]') ||
-    form.querySelector('input');
+    $("newCategoryName") ||
+    form.querySelector("input");
 
   const name = input?.value.trim();
 
@@ -801,8 +966,8 @@ async function saveCategory(event) {
   }
 
   form.reset();
+
   await loadCategories();
-  updateAdminStats();
 
   notify("নতুন Category যোগ হয়েছে।");
 }
@@ -815,6 +980,7 @@ function renderAdminCategories() {
     ? categories.map((category) => `
       <div class="cart-item">
         <strong>${escapeHTML(category.name)}</strong>
+
         <button
           class="admin-action delete-btn"
           data-delete-category="${escapeHTML(category.id)}"
@@ -863,12 +1029,11 @@ async function deleteCategory(categoryId) {
   }
 
   await loadCategories();
-  updateAdminStats();
   notify("Category Delete হয়েছে।");
 }
 
 /* =========================================
-   12. WEBSITE SETTINGS
+   14. WEBSITE SETTINGS
 ========================================= */
 
 async function saveSettings(event) {
@@ -876,18 +1041,18 @@ async function saveSettings(event) {
 
   if (!requireSupabase()) return;
 
-  const form = event.currentTarget;
-  const formData = new FormData(form);
-
+  // HTML-এর প্রকৃত ID থেকে তথ্য নেওয়া হচ্ছে।
   const payload = {
-    cafe_name: formData.get("cafe_name")?.toString().trim() || "",
-    address: formData.get("address")?.toString().trim() || "",
-    phone: formData.get("phone")?.toString().trim() || "",
-    email: formData.get("email")?.toString().trim() || "",
-    opening_hours: formData.get("opening_hours")?.toString().trim() || "",
-    description: formData.get("description")?.toString().trim() || ""
+    cafe_name: $("settingName")?.value.trim() || "",
+    phone: $("settingPhone")?.value.trim() || "",
+    email: $("settingEmail")?.value.trim() || "",
+    address: $("settingAddress")?.value.trim() || "",
+    description: $("settingAbout")?.value.trim() || "",
+    opening_hours: $("settingHours")?.value.trim() || ""
   };
 
+  // অতিরিক্ত কলাম থাকলেই সেগুলো পাঠানো হবে।
+  // Database-এ কলাম না থাকলে আলাদা করে SQL-এ যোগ করতে হবে।
   const { data: existing, error: readError } = await supabase
     .from("site_settings")
     .select("id")
@@ -924,11 +1089,13 @@ async function saveSettings(event) {
 }
 
 /* =========================================
-   13. CHECKOUT & ORDER MANAGEMENT
+   15. CHECKOUT
 ========================================= */
 
 function setupCheckout() {
-  $("checkoutButton")?.addEventListener("click", () => {
+  const checkoutButton = $("checkoutBtn") || $("checkoutButton");
+
+  checkoutButton?.addEventListener("click", () => {
     if (!cart.length) {
       notify("তোমার Cart খালি।");
       return;
@@ -955,42 +1122,29 @@ async function placeOrder(event) {
     return;
   }
 
-  const form = event.currentTarget;
-  const formData = new FormData(form);
-
-  const customerName =
-    formData.get("customer_name") ||
-    form.querySelector('[name="name"]')?.value;
-
-  const phone =
-    formData.get("phone") ||
-    form.querySelector('[name="phone"]')?.value;
-
-  const address =
-    formData.get("address") ||
-    form.querySelector('[name="address"]')?.value;
+  const customerName = $("orderCustomer")?.value.trim();
+  const phone = $("orderPhone")?.value.trim();
+  const address = $("orderAddress")?.value.trim();
 
   if (!customerName || !phone || !address) {
     notify("নাম, ফোন ও ঠিকানা পূরণ করো।");
     return;
   }
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
   const orderPayload = {
-    customer_name: String(customerName).trim(),
-    phone: String(phone).trim(),
-    address: String(address).trim(),
+    customer_name: customerName,
+    phone,
+    address,
     items: cart.map((item) => ({
       food_id: item.id,
       name: item.name,
       price: item.price,
       quantity: item.quantity
     })),
-    total,
+    total: cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    ),
     status: "Pending"
   };
 
@@ -1006,14 +1160,18 @@ async function placeOrder(event) {
 
   cart = [];
   renderCart();
-  form.reset();
 
+  $("checkoutForm")?.reset();
   $("checkoutModal")?.classList.remove("show");
 
   notify("তোমার Order গ্রহণ করা হয়েছে।");
 
   await loadOrders();
 }
+
+/* =========================================
+   16. ORDER MANAGEMENT
+========================================= */
 
 async function loadOrders() {
   if (!requireSupabase()) return;
@@ -1038,17 +1196,20 @@ function renderOrders(orders) {
   table.innerHTML = orders.length
     ? orders.map((order) => `
       <tr>
+        <td>${escapeHTML(String(order.id).slice(0, 8))}</td>
         <td>${escapeHTML(order.customer_name)}</td>
         <td>${escapeHTML(order.phone)}</td>
         <td>${money(order.total)}</td>
         <td>${escapeHTML(order.status || "Pending")}</td>
+
         <td>
           <select data-order-status="${escapeHTML(order.id)}">
             ${["Pending", "Accepted", "Preparing", "Completed", "Cancelled"]
               .map((status) => `
-                <option value="${status}" ${
-                  order.status === status ? "selected" : ""
-                }>
+                <option
+                  value="${status}"
+                  ${order.status === status ? "selected" : ""}
+                >
                   ${status}
                 </option>
               `).join("")}
@@ -1056,11 +1217,12 @@ function renderOrders(orders) {
         </td>
       </tr>
     `).join("")
-    : '<tr><td colspan="5">এখনো কোনো Order নেই।</td></tr>';
+    : '<tr><td colspan="6">এখনো কোনো Order নেই।</td></tr>';
 }
 
 $("adminOrderList")?.addEventListener("change", async (event) => {
   const select = event.target.closest("[data-order-status]");
+
   if (!select || !requireSupabase()) return;
 
   const { error } = await supabase
@@ -1078,7 +1240,7 @@ $("adminOrderList")?.addEventListener("change", async (event) => {
 });
 
 /* =========================================
-   14. CONTACT FORM
+   17. CONTACT FORM
 ========================================= */
 
 function setupContactForm() {
@@ -1087,8 +1249,8 @@ function setupContactForm() {
 
     const form = event.currentTarget;
 
-    // এখানে কোনো Email পাঠানো হচ্ছে না।
-    // Email integration পরে Backend দিয়ে যুক্ত করতে হবে।
+    // এটি বর্তমানে শুধু form submission confirmation।
+    // বাস্তব Email পাঠাতে Backend Email Service প্রয়োজন।
 
     notify("ধন্যবাদ! Contact Form পূরণ হয়েছে।");
     form.reset();
@@ -1096,10 +1258,9 @@ function setupContactForm() {
 }
 
 /* =========================================
-   15. GLOBAL BUTTON SUPPORT
+   18. GLOBAL BUTTON SUPPORT
 ========================================= */
 
-// HTML-এ inline onclick থাকলেও ব্যবহার করা যাবে।
 window.openAdminLogin = openAdminLogin;
 window.closeAdminLogin = closeAdminLogin;
 window.openCart = openCart;
